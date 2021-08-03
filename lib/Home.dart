@@ -14,15 +14,23 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   List _listaTarefa = [];
 
-  _salvarArquivo() async {
+  Future<File> _getFile() async {
     //Pegando o diretorio
     final diretorio = await getApplicationDocumentsDirectory();
     //Criando um arquivo no dispositivo
-    var arquivo =  File("${diretorio.path}/dados.json");
+    return File("${diretorio.path}/dados.json");
+  }
+  
 
+  _salvarArquivo() async {
+
+    var arquivo = await _getFile();
+
+    //Criando um map para passar para o arquivo json
     Map<String, dynamic> tarefa = Map();
     tarefa["titulo"] = "Ir ao mercado";
     tarefa["realizada"] = false;
+    //Adicionando na lista
     _listaTarefa.add(tarefa);
 
     //Convertendo os dados em json
@@ -31,8 +39,33 @@ class _HomeState extends State<Home> {
     arquivo.writeAsString(dados);
   }
 
+  _lerArquivo() async {
+
+    try {
+      final arquivo = await _getFile();
+      return arquivo.readAsString();
+    } catch (e) {
+      print(e.toString());
+      return null;
+    }
+
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _lerArquivo().then( (dados){
+      setState(() {
+        _listaTarefa = json.decode(dados);
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    //_salvarArquivo();
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Lista de Tarefas"),
@@ -43,8 +76,9 @@ class _HomeState extends State<Home> {
           Expanded(
             child: ListView.builder(
               itemBuilder: (context, index) {
+                print(_listaTarefa.toString());
                 return ListTile(
-                  title: Text(_listaTarefa[index]),
+                  title: Text(_listaTarefa[index]['titulo']),
                 );
               },
               itemCount: _listaTarefa.length,
