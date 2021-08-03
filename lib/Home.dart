@@ -67,6 +67,38 @@ class _HomeState extends State<Home> {
     });
   }
 
+  Widget criarItemLista(context, index) {
+    final item = _listaTarefa[index]['titulo'];
+
+    return Dismissible(
+      key: Key(item),
+      direction: DismissDirection.endToStart,
+      onDismissed: (direction){
+        _listaTarefa.removeAt(index);
+        _salvarArquivo();
+      },
+      background: Container(
+        color: Colors.red,
+        padding: EdgeInsets.all(16),
+        child: Row(
+          mainAxisAlignment:  MainAxisAlignment.end,
+          children: [
+            Icon(Icons.delete, color: Colors.white,)
+          ],
+        ),
+      ),
+      child: CheckboxListTile(
+          title: Text(_listaTarefa[index]['titulo']),
+          value: _listaTarefa[index]['realizada'],
+          onChanged: (valorAlterado) {
+            setState(() {
+              _listaTarefa[index]['realizada'] = valorAlterado;
+            });
+            _salvarArquivo();
+          }),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     //_salvarArquivo();
@@ -80,25 +112,7 @@ class _HomeState extends State<Home> {
         children: [
           Expanded(
             child: ListView.builder(
-              itemBuilder: (context, index) {
-                print(_listaTarefa.toString());
-
-                return CheckboxListTile(
-                    title: Text(_listaTarefa[index]['titulo']),
-                    value: _listaTarefa[index]['realizada'],
-                    onChanged: (valorAlterado) {
-                      setState(() {
-                        _listaTarefa[index]['realizada'] = valorAlterado;
-                      });
-                      _salvarArquivo();
-                    });
-
-                /*
-                return ListTile(
-                  title: Text(_listaTarefa[index]['titulo']),
-                );
-                */
-              },
+              itemBuilder: criarItemLista,
               itemCount: _listaTarefa.length,
             ),
           )
