@@ -13,6 +13,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   List _listaTarefa = [];
+  Map<String, dynamic> _ultimaTarefaRemovida = Map();
   TextEditingController _controllerTarefa = TextEditingController();
 
   Future<File> _getFile() async {
@@ -71,19 +72,45 @@ class _HomeState extends State<Home> {
     final item = _listaTarefa[index]['titulo'];
 
     return Dismissible(
-      key: Key(item),
+      //Valor diferente deste o chamado da função
+      key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
       direction: DismissDirection.endToStart,
-      onDismissed: (direction){
+      onDismissed: (direction) {
+
+        //Recuperando o ultimo item excluído
+        _ultimaTarefaRemovida = _listaTarefa[index];
+
         _listaTarefa.removeAt(index);
         _salvarArquivo();
+
+
+        //snackbar
+        final snackBar = SnackBar(
+          content: Text("Tarefa removida"),
+          backgroundColor: Colors.green,
+          action: SnackBarAction(
+            label: "Desfazer",
+            onPressed: () {
+              setState(() {
+                _listaTarefa.insert(index, _ultimaTarefaRemovida);
+              });
+              _salvarArquivo();
+            },
+          ),
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
       },
       background: Container(
         color: Colors.red,
         padding: EdgeInsets.all(16),
         child: Row(
-          mainAxisAlignment:  MainAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Icon(Icons.delete, color: Colors.white,)
+            Icon(
+              Icons.delete,
+              color: Colors.white,
+            )
           ],
         ),
       ),
@@ -101,7 +128,6 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    //_salvarArquivo();
 
     return Scaffold(
       appBar: AppBar(
